@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NOVOR ENERGY - Attendance System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen pb-32 select-none">
+
+    <nav class="bg-[#1e3a8a] text-white shadow-md sticky top-0 z-50 px-4 py-3.5 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <span class="text-xl">☀️</span>
+            <span class="font-bold text-sm uppercase tracking-wider">Novor Energy</span>
+        </div>
+        <button id="logoutBtn" class="hidden text-xs bg-red-500/20 hover:bg-red-500/30 text-red-100 font-bold px-3 py-1.5 rounded-xl transition-all">
+            🚪 ចាកចេញ
+        </button>
+    </nav>
+
+    <main class="max-w-md mx-auto p-4 space-y-4">
+
+        <div id="loginSection" class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 space-y-6">
+            <div class="text-center space-y-1">
+                <h1 class="text-lg font-bold text-slate-800">ប្រព័ន្ធពិនិត្យវត្តមាន</h1>
+                <p class="text-xs text-slate-400">សូមជ្រើសរើសប្រភេទគណនីដើម្បីចូលប្រើប្រាស់</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl">
+                <button id="tabStaff" class="py-2 text-xs font-bold rounded-lg bg-white text-blue-600 shadow-sm transition-all">👤 បុគ្គលិក</button>
+                <button id="tabAdmin" class="py-2 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all">🔑 Admin</button>
+            </div>
+
+            <div id="formStaff" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-400 block uppercase">លេខសម្គាល់ ID បុគ្គលិក</label>
+                    <input type="text" id="loginStaffId" placeholder="ឧទាហរណ៍៖ NV001" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500 transition-all">
+                </div>
+                <button id="submitStaffLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs transition-colors shadow-sm">
+                    🚀 ចូលទៅកាន់ប្រព័ន្ធ
+                </button>
+            </div>
+
+            <div id="formAdmin" class="hidden space-y-4">
+                <div class="space-y-4">
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-400 block uppercase">ឈ្មោះគណនី</label>
+                        <input type="text" id="loginAdminUser" placeholder="Username" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-400 block uppercase">លេខកូដសម្ងាត់</label>
+                        <input type="password" id="loginAdminPass" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500 transition-all">
+                    </div>
+                </div>
+                <button id="submitAdminLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs transition-colors shadow-sm">
+                    🔐 ចូលប្រើប្រាស់ជា Admin
+                </button>
+            </div>
+
+            <div id="loginError" class="hidden text-xs font-bold text-red-500 text-center"></div>
+        </div>
+
+        <div id="staffSection" class="hidden space-y-4">
+            
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 space-y-4">
+                <div class="flex justify-between items-center gap-2">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-1.5 h-4 bg-blue-600 rounded-full inline-block"></span>
+                        <h2 class="text-sm font-bold text-slate-800" id="sectionTitle">ពិនិត្យវត្តមានប្រចាំថ្ងៃ</h2>
+                    </div>
+                    <button id="loadDataBtn" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border border-emerald-100">
+                        <span>🔄</span> ទាញទិន្នន័យ
+                    </button>
+                </div>
+
+                <div id="searchContainer" class="relative hidden">
+                    <input type="text" id="searchStaff" placeholder="🔍 ស្វែងរកឈ្មោះ ឬ លេខកូដ ID..." class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-blue-500 transition-all">
+                    <button id="clearSearchBtn" class="hidden absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 text-xs font-bold">✕</button>
+                </div>
+
+                <div class="space-y-2 hidden" id="staffFilterContainer">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase">ពីថ្ងៃទី</label>
+                            <input type="date" id="filterDateFrom" class="border border-slate-200 px-3 py-2 rounded-xl w-full text-xs focus:ring-1 focus:ring-blue-500 outline-none transition-all bg-slate-50 text-slate-700">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase">ដល់ថ្ងៃទី</label>
+                            <input type="date" id="filterDateTo" class="border border-slate-200 px-3 py-2 rounded-xl w-full text-xs focus:ring-1 focus:ring-blue-500 outline-none transition-all bg-slate-50 text-slate-700">
+                        </div>
+                    </div>
+                    <button id="clearDateBtn" class="hidden w-full text-center text-[11px] font-bold text-blue-600 py-1">✕ សម្អាតកាលបរិច្ឆេទ</button>
+                </div>
+
+                <div id="filterBanner" class="hidden bg-blue-50/50 border border-blue-100 p-3 rounded-xl flex justify-between items-center text-xs text-blue-700">
+                    <div>វត្តមានរបស់៖ <span id="filteredNameText" class="font-bold"></span></div>
+                    <button id="resetFilterBtn" class="font-bold underline text-blue-800">បង្ហាញទាំងអស់</button>
+                </div>
+            </div>
+
+            <div id="summarySection" class="space-y-3"></div>
+
+            <div id="attendanceContainer" class="space-y-3"></div>
+        </div>
+
+        <div id="staffManagementSection" class="hidden space-y-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 space-y-4">
+                <div class="text-center border-b border-slate-100 pb-3">
+                    <h2 class="text-base font-bold text-slate-800">គ្រប់គ្រងព័ត៌មានបុគ្គលិក</h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">បញ្ជីឈ្មោះ និងគ្រប់គ្រងគណនីបុគ្គលិកទាំងអស់</p>
+                </div>
+                <div class="space-y-2" id="staffListContainer">
+                    </div>
+            </div>
+        </div>
+
+        <div id="staffProfileSection" class="hidden space-y-4">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/60 text-center space-y-4">
+                <div class="space-y-1">
+                    <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mx-auto border-4 border-blue-50" id="profileAvatar">👤</div>
+                    <h2 class="text-base font-bold text-slate-800" id="profileName">-</h2>
+                    <p class="text-xs text-slate-400 font-mono" id="profileId">ID: -</p>
+                </div>
+                <div class="border-t border-slate-100 pt-4 space-y-3 text-left text-xs">
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                        <span class="text-slate-400 font-medium">ផ្នែក/ជំនាញ</span>
+                        <span class="font-bold text-slate-700" id="profileDept">-</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                        <span class="text-slate-400 font-medium">តួនាទីគណនី</span>
+                        <span class="font-bold text-emerald-600">បុគ្គលិក (Staff)</span>
+                    </div>
+                </div>
+                <button id="staffLogoutBtn" class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-bold py-3 rounded-xl text-xs transition-colors">
+                    🚪 ចាកចេញពីគណនី
+                </button>
+            </div>
+        </div>
+
+        <div id="adminSection" class="hidden space-y-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 space-y-4">
+                <div class="text-center border-b border-slate-100 pb-3">
+                    <h2 class="text-base font-bold text-slate-800">ការកំណត់ប្រព័ន្ធ</h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">ផ្ទុកឡើងទិន្នន័យ CSV ថ្មីទៅកាន់ GitHub</p>
+                </div>
+                <div class="space-y-3 text-xs">
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-400 uppercase text-[10px]">GitHub Repository</label>
+                        <input type="text" id="ghRepo" placeholder="ឧទាហរណ៍៖ salseyha2006/attendance-app" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500 font-mono">
+                    </div>
+                    <!-- ក្នុង adminSection ជំនួស div GitHub Repository និង PAT ដោយ: -->
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-400 uppercase text-[10px]">API Server URL</label>
+                        <input type="text" id="apiUrlInput" placeholder="https://attendance-backend-wych.onrender.com" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500 font-mono">
+                    </div>
+                    <div class="space-y-1.5 pt-2">
+                        <label class="font-bold text-slate-400 uppercase text-[10px] block">ជ្រើសរើសឯកសារ CSV ថ្មី</label>
+                        <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+                        <label for="csvFileInput" class="w-full border-2 border-dashed border-slate-200 hover:border-blue-400 p-4 rounded-2xl text-center cursor-pointer transition-all block space-y-1 bg-slate-50/50">
+                            <span class="text-lg block">📂</span>
+                            <span class="text-[11px] font-bold text-slate-500 block" id="selectedFileName">ជ្រើសរើស File CSV ចេញពីទូរស័ព្ទ</span>
+                        </label>
+                    </div>
+                    <button id="uploadBtn" class="w-full bg-[#1e3a8a] hover:bg-blue-800 text-white font-bold py-3 rounded-xl transition-all shadow-sm">
+                        📤 ផ្សព្វផ្សាយទិន្នន័យទៅប្រព័ន្ធ
+                    </button>
+                    <div id="uploadStatus" class="text-xs font-semibold mt-1"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="bottomNavbar" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 shadow-lg px-2 pt-2 justify-around items-center z-50 max-w-md mx-auto pb-[calc(12px+env(safe-area-inset-bottom))]">
+        <button id="navDashboard" class="flex flex-col items-center space-y-0.5 text-blue-600 font-bold scale-105 transition-all">
+            <span class="text-xl">📊</span>
+            <span class="text-[10px]">Dashboard</span>
+        </button>
+        <button id="navStaffAttendance" class="flex flex-col items-center space-y-0.5 text-slate-400 font-medium transition-all">
+            <span class="text-xl">👥</span>
+            <span class="text-[10px]">មើលវត្តមាន</span>
+        </button>
+        <button id="navStaffManage" class="flex flex-col items-center space-y-0.5 text-slate-400 font-medium transition-all">
+            <span class="text-xl">🗂️</span>
+            <span class="text-[10px]">បុគ្គលិក</span>
+        </button>
+        <button id="navAdmin" class="flex flex-col items-center space-y-0.5 text-slate-400 font-medium transition-all">
+            <span class="text-xl">⚙️</span>
+            <span class="text-[10px]">ការកំណត់</span>
+        </button>
+    </div>
+
+    <div id="staffBottomNavbar" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 shadow-lg px-2 pt-2 justify-around items-center z-50 max-w-md mx-auto pb-[calc(12px+env(safe-area-inset-bottom))]">
+        <button id="navStaffHome" class="flex flex-col items-center space-y-0.5 text-blue-600 font-bold scale-105 transition-all">
+            <span class="text-xl">📊</span>
+            <span class="text-[10px]">Dashboard</span>
+        </button>
+        <button id="navStaffHistory" class="flex flex-col items-center space-y-0.5 text-slate-400 font-medium transition-all">
+            <span class="text-xl">👥</span>
+            <span class="text-[10px]">មើលវត្តមាន</span>
+        </button>
+        <button id="navStaffProfile" class="flex flex-col items-center space-y-0.5 text-slate-400 font-medium transition-all">
+            <span class="text-xl">⚙️</span>
+            <span class="text-[10px]">ការកំណត់</span>
+        </button>
+    </div>
+
+    <!-- កែប្រែត្រង់បន្ទាត់ចុងក្រោយគេបង្អស់នៃ index.html -->
+    <script src="main.js"></script>
+</body>
+</html>
